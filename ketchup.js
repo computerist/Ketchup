@@ -29,7 +29,7 @@ Task.prototype.isComplete = function() {
 
 TIMER_STATE_WAITING  = 1;
 TIMER_STATE_RUNNING  = 2;
-TIMER_STATE_PAUSED   = 3;
+TIMER_STATE_STOPPED   = 3;
 TIMER_STATE_FINISHED = 4;
 TIMER_TICK = 5;
 
@@ -37,7 +37,10 @@ function Timer(aDuration, aUnit, aListener) {
   this.duration = 0;
   this.state = TIMER_STATE_WAITING;
   this.listener = aListener;
+  this._setTime(aDuration, aUnit);
+}
 
+Timer.prototype._setTime = function(aDuration, aUnit) {
   switch (aUnit) {
   case TIMER_SECONDS:
     this.duration = aDuration;
@@ -48,6 +51,14 @@ function Timer(aDuration, aUnit, aListener) {
   case TIMER_HOURS:
     this.duration = aDuration * 60 * 60;
   }
+}
+
+Timer.prototype.reset = function(aDuration, aUnit) {
+  if (this.state == TIMER_STATE_RUNNING) {
+    this.stop();
+  }
+  this._setTime(aDuration, aUnit);
+  this.state = TIMER_STATE_WAITING;
 }
 
 Timer.prototype.changeState = function(aState) {
@@ -76,7 +87,7 @@ Timer.prototype.start = function() {
     console.log("Timer start for "+this.duration+" seconds");
   }
 
-  if (this.state != TIMER_STATE_WAITING && this.state != TIMER_STATE_PAUSED) {
+  if (this.state != TIMER_STATE_WAITING && this.state != TIMER_STATE_STOPPED) {
     console.log("inconsistent timer state - will not start");
     return;
   }
@@ -93,15 +104,15 @@ Timer.prototype.tick = function() {
                  "target": this});
 }
 
-Timer.prototype.pause = function() {
+Timer.prototype.stop = function() {
   if (KETCHUP_DEBUG) {
-    console.log("Timer pause");
+    console.log("Timer stop");
   }
   if (this.state != TIMER_STATE_RUNNING) {
-    console.log("inconsistent timer state - will not pause");
+    console.log("inconsistent timer state - will not stop");
     return;
   }
-  this.changeState(TIMER_STATE_PAUSED);
+  this.changeState(TIMER_STATE_STOPPED);
   // keep note of the remaining running time
   this.duration = (this.end - Date.now()) / 1000;
 
