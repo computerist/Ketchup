@@ -119,16 +119,26 @@ Timer.prototype.pause = function() {
   }
 };
 
+function pad(val, size, pad) {
+  padded = val.toString();
+  while (padded.length < size) {
+    padded = pad.toString()+padded;
+  }
+  return padded;
+}
+
 function TimerDisplay(elem) {
   this.element = elem;
 }
 
 TimerDisplay.prototype.onEvent= function(evt) {
-  this.element.textContent = ""+evt.time;
+  this.element.textContent = pad(Math.floor(evt.time/60),2,0)+":"
+      +pad(Math.round(evt.time%60),2,0);
   console.log(evt.time + " seconds remaining");
 };
 
 TimerDisplay.prototype.start = function () {
-  this.timer = new Timer(10, TIMER_SECONDS, this.onEvent.bind(this));
+  // TODO: Get the time period from the UI
+  this.timer = new Timer(25, TIMER_MINUTES, this.onEvent.bind(this));
   this.timer.start();
 };
